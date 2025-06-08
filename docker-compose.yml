@@ -1,0 +1,21 @@
+version: '3'
+services:
+  auth:
+    build: ./auth-service
+    ports:
+      - "3000:3000"
+
+  usuarios:
+    build: ./usuarios-service
+    ports:
+      - "3001:3000"
+
+  comunidades:
+    build: ./comunidades-service
+    ports:
+      - "3002:3000"
+
+  gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:3000"

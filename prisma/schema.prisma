@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id                  Int        @id @default(autoincrement())
+  correo              String     @unique
+  contrasenaHash      String
+  salt                String
+  nombre              String
+  biografia           String?
+  fotoPerfil          String?
+  fechaRegistro       DateTime   @default(now())
+  activo              Boolean    @default(true)
+  claveRecuperacion   String?
+  ultimoAcceso        DateTime?
+  intentosFallidos    Int        @default(0)
+  bloqueado           Boolean    @default(false)
+
+  roles              UsuarioRol[]
+  chatsCreados       Chat[]
+  miembrosChat       MiembroChat[]
+  preferencias       PreferenciaUsuario[]
+  auditorias         AuditoriaUsuario[]
+}
+
+model Rol {
+  id            Int      @id @default(autoincrement())
+  nombre        String   @unique
+  descripcion   String?
+
+  permisos      RolPermiso[]
+  usuariosRoles UsuarioRol[]
+}
+
+model Permiso {
+  id            Int      @id @default(autoincrement())
+  nombre        String   @unique
+  descripcion   String?
+
+  rolPermisos   RolPermiso[]
+}
+
+model Categoria {
+  id            Int      @id @default(autoincrement())
+  nombre        String   @unique
+  descripcion   String?
+  imagen        String?
+  activa        Boolean  @default(true)
+
+  chats         Chat[]
+  preferencias  PreferenciaUsuario[]
+}
+
+model Chat {
+  id              Int      @id @default(autoincrement())
+  nombre          String
+  descripcion     String?
+  imagen          String?
+  fechaCreacion   DateTime @default(now())
+  categoriaId     Int
+  creadorId       Int
+  privado         Boolean  @default(false)
+  activo          Boolean  @default(true)
+
+  categoria       Categoria @relation(fields: [categoriaId], references: [id])
+  creador         Usuario   @relation(fields: [creadorId], references: [id])
+  miembros        MiembroChat[]
+}
+
+model MiembroChat {
+  id              Int      @id @default(autoincrement())
+  usuarioId       Int
+  chatId          Int
+  fechaUnion      DateTime @default(now())
+  esAdministrador Boolean  @default(false)
+  bloqueado       Boolean  @default(false)
+
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id])
+  chat            Chat      @relation(fields: [chatId], references: [id])
+
+  @@unique([usuarioId, chatId])
+}
+
+model UsuarioRol {
+  id              Int      @id @default(autoincrement())
+  usuarioId       Int
+  rolId           Int
+  fechaAsignacion DateTime @default(now())
+
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id])
+  rol             Rol       @relation(fields: [rolId], references: [id])
+
+  @@unique([usuarioId, rolId])
+}
+
+model RolPermiso {
+  id              Int      @id @default(autoincrement())
+  rolId           Int
+  permisoId       Int
+
+  rol             Rol       @relation(fields: [rolId], references: [id])
+  permiso         Permiso   @relation(fields: [permisoId], references: [id])
+
+  @@unique([rolId, permisoId])
+}
+
+model PreferenciaUsuario {
+  id              Int      @id @default(autoincrement())
+  usuarioId       Int
+  categoriaId     Int
+
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id])
+  categoria       Categoria @relation(fields: [categoriaId], references: [id])
+
+  @@unique([usuarioId, categoriaId])
+}
+
+model AuditoriaUsuario {
+  id              Int      @id @default(autoincrement())
+  usuarioId       Int
+  accion          String
+  fechaAccion     DateTime @default(now())
+  ipOrigen        String
+  detalles        String?
+
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id])
+}
