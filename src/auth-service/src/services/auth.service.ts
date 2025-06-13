@@ -44,11 +44,9 @@ export class AuthService {
   }
 
   async login(correo: string, contrasena: string) {
-    const user = await this.prisma.usuario.findUnique({
-      where: { correo },
-    });
-
-    if (!user || !(await bcrypt.compare(contrasena, user.contrasenaHash))) {
+    const user = await this.validateUser(correo, contrasena);
+    
+    if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
@@ -61,12 +59,13 @@ export class AuthService {
   }
 
   // Generar token JWT con tiempo de vida corto
-  private generateToken(userId: number, email: string) {
+  generateToken(userId: number, email: string) {
     const payload = { email, sub: userId };
     return {
       access_token: this.jwtService.sign(payload, { expiresIn: '15m' }), // Token dura 15 minutos
     };
   }
+
   async validateUser(correo: string, contrasena: string): Promise<any> {
     const user = await this.prisma.usuario.findUnique({
       where: { correo },
@@ -82,6 +81,8 @@ export class AuthService {
       return null; // Contraseña incorrecta
     }
 
-    return user;
+    // Devolver usuario sin datos sensibles
+    const { contrasenaHash, salt, ...result } = user;
+    return result;
   }
 }

@@ -4,6 +4,7 @@ import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class AppService {
+  
   constructor(private prisma: PrismaService) {}
 
   async getUsuarioById(id: number) {
@@ -22,5 +23,7 @@ export class AppService {
     if (!user) throw new Error('Usuario no encontrado');
 
     return user;
+    
   }
+  
 }

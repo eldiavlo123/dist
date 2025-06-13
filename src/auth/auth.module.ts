@@ -9,8 +9,12 @@ import { AuthController } from '../auth-service/src/controllers/auth.controller'
 import { PrismaService } from '../prisma.service';
 import { JwtStrategy } from '../auth-service/src/strategies/jwt.strategy';
 
+import { PrismaModule } from '../prisma.module'; // ✅ Importamos el módulo con PrismaService
+
+
 @Module({
   imports: [
+    PrismaModule,
     UsuariosModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({

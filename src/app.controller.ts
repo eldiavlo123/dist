@@ -11,4 +11,5 @@ export class AppController {
   async getUsuario(@Param('id') id: string) {
     return this.appService.getUsuarioById(+id);
   }
+  
 }
